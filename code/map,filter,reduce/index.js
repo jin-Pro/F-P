@@ -1,3 +1,11 @@
+// 132 라인
+
+const curry = f => (fn,...iter) => iter.length 
+? f(fn,...iter) 
+: (...args) => f(fn,...args) 
+
+//
+
 const arr = [1, 2, 3, 4, 5];
 const string = "abcde";
 
@@ -13,11 +21,11 @@ for (const a of string) console.log(a); // a,b,c,d,e
  * 즉, Array와 String은 순회 가능한 iterator이지만, map은 Array의 메서드 였기 떄문일뿐이다.
  */
 
-const map = (f, iter) => {
+const map = curry((f, iter) => {
   let res = [];
   for (const a of iter) res.push(f(a));
   return res;
-};
+});
 
 console.log(map((item) => item, arr)); // [1,2,3,4,5]
 console.log(map((item) => item, string)); // [a,b,c,d,e]
@@ -26,16 +34,16 @@ console.log(map((item) => item, string)); // [a,b,c,d,e]
  * 위와 같이 iterator의 속성을 사용한 for ... of 를 사용하여 map을 만들 수 있다.
  */
 
-const filter = (f, iter) => {
+const filter = curry((f, iter) => {
   let res = [];
   for (const a of iter) if (f(a)) res.push(a);
   return res;
-};
+});
 
 console.log(filter((item) => item < 3, arr)); // 1,2
 console.log(filter((item) => item < "c", string)); // a,b
 
-const reduce = (f, acc, iter) => {
+const reduce = curry((f, acc, iter) => {
   if (!iter) {
     iter = acc[Symbol.iterator]();
     acc = iter.next().value;
@@ -44,7 +52,16 @@ const reduce = (f, acc, iter) => {
     acc = f(a, acc);
   }
   return acc;
-};
+});
 
 console.log(reduce((a, b) => a + b, 10, arr)); // 25
 console.log(reduce((a, b) => a + b, arr)); // 15
+
+const fn = {
+  map,
+  filter,
+  reduce,
+  curry
+}
+
+module.exports.fn = fn;

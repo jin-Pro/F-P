@@ -103,7 +103,7 @@ console.timeEnd('go L.range')
 // 지연 평가 map => L.map
 
 L.map = curry(function*(f,iter){
-  for (const a of iter)yield a;
+  for (const a of iter) yield f(a);
 })
 
 console.time('map')

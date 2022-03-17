@@ -43,12 +43,103 @@ console.log(reduce(add,Llist)) // 10
 
 console.clear();
 
+// console.time('range')
+// console.log(reduce(add,range(10000000)))
+// console.timeEnd('range')
+// // 853.222ms
+
+// console.time('L.range')
+// console.log(reduce(add,L.range(10000000)))
+// console.timeEnd('L.range')
+// // 359.005ms
+
+// 다음은, range함수로 만든 데이터에서 지정한 갯수만큼 데이터를 가지고오는 take함수를 만들어본다.
+
+const take = curry((l,iter) => {
+  let res = []
+  for ( const a of iter){
+    res.push(a)
+    if(res.length === l) return res;
+  }
+  return res
+})
+
+// 아래 코드는 range함수로 10개를 만들고 take함수로 5개를 뽑아오는 함수이다.
+console.log(take(5,range(10)))
+
 console.time('range')
-console.log(reduce(add,range(10000000)))
+console.log(take(5,range(10000000)))
 console.timeEnd('range')
-// 853.222ms
+// range: 504.045ms 
 
 console.time('L.range')
-console.log(reduce(add,L.range(10000000)))
+console.log(take(5,L.range(10000000)))
 console.timeEnd('L.range')
-// 359.005ms
+// L.range: 0.26ms  
+
+// 위 두 함수의 차이는 range는 10000000개의 배열을 만들고 나서 5개를 뽑는다.
+// L.range는 10000000개의 배열을 만들지 않고, take에 입력한 인자의 갯수만큼만 뽑는다.
+
+// 위 코드는 아래와 같이 작성할 수 있다.
+
+console.time('go range')
+go(
+  range(10000000),
+  take(5),
+  console.log
+  )
+console.timeEnd('go range')
+// go range: 595.511ms
+
+console.time('go L.range')
+go(
+  L.range(10000000),
+  take(5),
+  console.log
+  )
+console.timeEnd('go L.range')
+// go L.range: 0.245ms
+
+// 지연 평가 map => L.map
+
+L.map = curry(function*(f,iter){
+  for (const a of iter)yield a;
+})
+
+console.time('map')
+go(
+  range(1000000),
+  map(i => i * i)
+)
+console.timeEnd('map')
+// map: 165.47ms
+
+console.time('L.map')
+go(
+  L.range(1000000),
+  L.map(i => i * i)
+)
+console.timeEnd('L.map')
+// L.map: 0.139ms
+
+L.filter = curry(function *(f,iter){
+  for (const a of iter) if(f(a)) yield a
+})
+
+console.time('filter')
+go(
+  range(1000000),
+  filter(i => i < 1000)
+)
+console.timeEnd('filter')
+// filter: 70.581ms
+
+
+console.time('L.filter')
+go(
+  L.range(1000000),
+  L.filter(i => i < 1000)
+)
+console.timeEnd('L.filter')
+// L.filter: 0.145ms
+

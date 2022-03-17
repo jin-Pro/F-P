@@ -143,3 +143,9 @@ go(
 console.timeEnd('L.filter')
 // L.filter: 0.145ms
 
+
+const fn = {
+  map, filter, reduce , go , pipe , curry , L
+}
+
+module.exports.fn = fn;

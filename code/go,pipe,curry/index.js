@@ -141,3 +141,14 @@ console.clear();
       reduce((a,b) => a + b)
     )
   )
+
+  const fn = {
+    map,
+    filter,
+    reduce,
+    go,
+    pipe,
+    curry
+  }
+
+  module.exports.fn = fn;

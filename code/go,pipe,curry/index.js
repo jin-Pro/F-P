@@ -64,9 +64,13 @@ console.log(
  */
 
 const pipe =
-  (...fn) =>
-  (args) =>
-    go(args, ...fn);
+  (f, ...fs) =>
+  (...args) =>
+    go(f(...args), ...fs);
+
+// (...fn) =>
+// (args) =>
+//   go(args, ...fn);
 const f = pipe(
   (a) => a + 1,
   (a) => a + 10,
@@ -87,18 +91,18 @@ console.log(f(10));
       console.log(f(1,2))
   */
 
-const pipe1 =
-  (f, ...fs) =>
-  (...args) =>
-    go(f(...args), ...fs);
-const f1 = pipe1(
-  (a, b) => a + b,
-  (a) => a + 1,
-  (a) => a + 10,
-  (a) => a + 100
-);
+// const pipe1 =
+//   (f, ...fs) =>
+//   (...args) =>
+//     go(f(...args), ...fs);
+// const f1 = pipe1(
+//   (a, b) => a + b,
+//   (a) => a + 1,
+//   (a) => a + 10,
+//   (a) => a + 100
+// );
 
-console.log(f1(1, 2));
+// console.log(f1(1, 2));
 
 // go를 사용하여 위의 코드를 가독성 좋게 변경한다.
 

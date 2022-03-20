@@ -5,8 +5,6 @@ const curry =
   (fn, ...iter) =>
     iter.length ? f(fn, ...iter) : (...args) => f(fn, ...args);
 
-//
-
 const arr = [1, 2, 3, 4, 5];
 const string = "abcde";
 

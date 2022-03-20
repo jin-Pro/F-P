@@ -1,5 +1,5 @@
 const {
-  fn: { map, filter, reduce, go, pipe, curry, L, take },
+  fn: { map, filter, reduce, go, pipe, curry, L, take, range },
 } = require("../generator");
 
 console.clear();
@@ -108,16 +108,16 @@ L.flatten = function* f(iter) {
 
 const flatten = pipe(L.flatten, takeAll);
 
-console.log(L.flatten([[1, 2], 3, 4, [5, 6, 7, 8], [[9, 10], 11]]));
+console.log(take(3, L.flatten([[1, 2], 3, 4, [5, 6, 7, 8], [[9, 10], 11]])));
 console.log(flatten([[1, 2], 3, 4, [5, 6, 7, 8], [[9, 10], 11]]));
 
 // flatMap을 만들어본다.
 // flatMap은 iter를 받아 map을 돌고, flatten을 하는 함수이다.
 
-L.flatMap = curry(pipe(L.map, takeAll, L.flatten));
+L.flatMap = curry(pipe(L.map, L.flatten));
 
-let iter = L.flatMap(
-  (a) => a,
+const iter = L.flatMap(
+  map((a) => a * a),
   [
     [1, 2],
     [3, 4],
@@ -125,151 +125,186 @@ let iter = L.flatMap(
   ]
 );
 
-// console.log(iter.next());
-
+console.log([...iter]);
 // error L.flatten에서 iter is not iterable
 // L.map 에서 제대로 실행이 안된다고 판단
 
 // iter 변수의 값을 펼쳐서 생각해봄
 
 /**
- *
  L.flatMap(
-  (a) => a,
+  map((a) => a * a),
   [
     [1, 2],
     [3, 4],
     [5, 6, 7],
   ]
 );
-함수는 아래와 같다.
+
+위 함수는
 
 curry(
   pipe(
     L.map, 
     L.flatten
-    )
-  )(
-  (a) => a,
+  )
+)(map((a) => a * a),
   [
     [1, 2],
     [3, 4],
     [5, 6, 7],
-  ]
-  )
-)
+  ])
 
---- 
+  이며,
 
-curry 함수는 
+  curry 함수는
 
-const curry =
+  const curry =
   (f) =>
   (fn, ...iter) =>
     iter.length ? f(fn, ...iter) : (...args) => f(fn, ...args);
 
-  이기 때문에,
+  이므로
 
-  위 코드는 아래와 같다.
+  f : pipe(L.map,L.flatten)
+  fn : map(a => a * a)
+  iter : [[1, 2],[3, 4],[5, 6, 7]]
 
-  pipe(
-    L.map, 
-    L.flatten
-    )
-  )(
-  (a) => a,
-  [
-    [1, 2],
-    [3, 4],
-    [5, 6, 7],
-  ]
-  )
-
-  ---
+  => pipe(L.map,L.flatten)(map(a => a * a),[[1, 2],[3, 4],[5, 6, 7]]) 이 된다.
 
   pipe 함수는
 
+  const pipe = 
+    (...fn) =>
+    (args) =>
+      go(args, ...fn);
 
-const pipe =
-  (...fn) =>
-  (args) =>
-    go(args, ...fn);
+  이므로, go(map(a => a * a), L.map,L.flatten)이 된다.
+  여기서, [[1, 2],[3, 4],[5, 6, 7]] 의 값이 누락되게 된다, 왜냐하면 pipe는 args 인자 1개를 받기 때문이다.
+  pipe에서 인자를 2개 이상 받기 위해서는 pipe 함수를 수정해야 한다.
 
-  이기 때문에,
+  const pipe =
+  (f, ...fs) =>
+  (...args) =>
+    go(f(...args), ...fs);
+  와 같이  수정하게되면
 
-  위 코드는 아래와 같다.
-
-  go(
-    (
-      (a) => a,
-      [
-        [1, 2],
-        [3, 4],
-        [5, 6, 7],
-      ]
-    ),
-    L.map,
-    L.flatten
-  )
-
-  ---
-
-  go 함수는
-
-  const go = (...args) => reduce((a, f) => f(a), args);
-  
-  이기 때문에, 위 코드는 아래와 같다.
-
-  reduce((a,f) => f(a), (
-      (a) => a,
-      [
-        [1, 2],
-        [3, 4],
-        [5, 6, 7],
-      ]
-    ),
-    L.map,
-    L.flatten
-  )
-
-  ---
-
-  reduce 함수는
-
-  const reduce = curry((f, acc, iter) => {
-    if (!iter) {
-      iter = acc[Symbol.iterator]();
-      acc = iter.next().value;
-    }
-    for (const a of iter) {
-      acc = f(acc, a);
-    }
-    return acc;
-  });
-
-  이므로, 
-
-  acc은 (
-    (a) => a,
-    [
-      [1, 2],
-      [3, 4],
-      [5, 6, 7],
-    ]
-  )
-
-  이며,
-
-  iter 는 [ L.map , L.flatten ] 이다.
-
-  여기서 제가 생각한 문제는 
-  
-  L.map에서 f로는 a => a , iter = [
-      [1, 2],
-      [3, 4],
-      [5, 6, 7],
-    ] 를 받아서 iter를 그대로 반환해야 한다고 생각합니다.
-
-    하지만, L.flatten에서 받아온 iter는 iterable이 아니라고 에러 반환을
-    하는데, 문제가 무엇인지 모르겠습니다..
+pipe(L.map,L.flatten)(map(a => a * a),[[1, 2],[3, 4],[5, 6, 7]]) 함수는
+go(
+  L.map(
+    map(a => a * a), 
+    [[1, 2],[3, 4],[5, 6, 7]]
+  ),
+  L.flatten
+)
+이 되어 에러가 발생하지 않는다.
  */
+
+// =----------------------------------------------
+
+// 2차원 다루기
+
+console.clear();
+
+const arr = [
+  [1, 2],
+  [3, 4, 5],
+  [6, 7, 8],
+  [9, 10],
+];
+
+go(
+  arr,
+  L.flatten,
+  L.filter((a) => a % 2),
+  // takeAll,
+  take(2),
+  console.log
+);
+
+// 실무 데이터에 적용해보기
+
+const users2 = [
+  {
+    name: "a",
+    age: 25,
+    family: [
+      { name: "a1", age: 53 },
+      { name: "a2", age: 52 },
+      { name: "a3", age: 15 },
+      { name: "a4", age: 29 },
+    ],
+  },
+  {
+    name: "b",
+    age: 28,
+    family: [
+      { name: "b1", age: 25 },
+      { name: "b2", age: 26 },
+      { name: "b3", age: 75 },
+      { name: "b4", age: 56 },
+    ],
+  },
+  {
+    name: "c",
+    age: 22,
+    family: [
+      { name: "c1", age: 2 },
+      { name: "c2", age: 4 },
+      { name: "c3", age: 26 },
+      { name: "c4", age: 27 },
+    ],
+  },
+  {
+    name: "d",
+    age: 23,
+    family: [
+      { name: "d1", age: 14 },
+      { name: "d2", age: 16 },
+      { name: "d3", age: 35 },
+      { name: "d4", age: 36 },
+    ],
+  },
+];
+
+// users의 가족들중 20살 미만인 사람 4명을 뽑겠다.
+
+go(
+  users2,
+  L.flatMap((u) => u.family),
+  L.filter((u) => u.age > 20),
+  take(4),
+  console.log
+);
+
+/**
+ 객체 지향 프로그래밍은 데이터를 우선적으로 정리 한 후, 메서드를 그 이후에 만들면서 코드 작성
+ 함수형 프로그래밍은 이미 만들어져있는 함수들로 조합하여 데이터를 구성한다.
+ */
+
+console.time("");
+go(
+  range(10000000),
+  filter((n) => n < 1000),
+  take(4),
+  console.log
+);
+console.timeEnd(""); // 196ms
+
+console.time("");
+go(
+  range(10000000),
+  L.filter((n) => n < 1000),
+  take(4),
+  console.log
+);
+console.timeEnd(""); // 91 ms
+
+console.time("");
+go(
+  L.range(10000000),
+  L.filter((n) => n < 1000),
+  take(4),
+  console.log
+);
+console.timeEnd(""); // 0.1 ms

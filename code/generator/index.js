@@ -145,6 +145,7 @@ const fn = {
   curry,
   take,
   L,
+  range,
 };
 
 module.exports.fn = fn;

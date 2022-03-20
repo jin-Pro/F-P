@@ -1,8 +1,9 @@
 // 132 라인
 
-const curry = f => (fn,...iter) => iter.length 
-? f(fn,...iter) 
-: (...args) => f(fn,...args) 
+const curry =
+  (f) =>
+  (fn, ...iter) =>
+    iter.length ? f(fn, ...iter) : (...args) => f(fn, ...args);
 
 //
 
@@ -49,7 +50,7 @@ const reduce = curry((f, acc, iter) => {
     acc = iter.next().value;
   }
   for (const a of iter) {
-    acc = f(a, acc);
+    acc = f(acc, a);
   }
   return acc;
 });
@@ -61,7 +62,7 @@ const fn = {
   map,
   filter,
   reduce,
-  curry
-}
+  curry,
+};
 
 module.exports.fn = fn;

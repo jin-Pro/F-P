@@ -143,6 +143,7 @@ const fn = {
   go,
   pipe,
   curry,
+  take,
   L,
 };
 

@@ -83,7 +83,8 @@ const find = curry(
   (f, iter) =>
     // go(iter, filter(f), take(3), ([a]) => a, console.log)
     // 위 함수에서 filter와 take가 실행될때 이미 배열을 만들어 놓았기 떄문에 성능적으로 좋지 않다.
-    go(iter, L.filter(f), take(3), ([a]) => a, console.log)
+    go(iter, L.filter(f), take(3), ([a]) => a)
+  // go(iter, L.filter(f), take(3), ([a]) => a, console.log)
   // filter 함수를 lazy 형태로 사용하게되면 배열을 만들어 놓지 않기떄문에 take까지 조건이 맞으면 배열을 더 순회하지 않아 성능적으로 좋다.
 );
 
@@ -308,3 +309,18 @@ go(
   console.log
 );
 console.timeEnd(""); // 0.1 ms
+
+const fn = {
+  map,
+  filter,
+  reduce,
+  go,
+  pipe,
+  curry,
+  L,
+  take,
+  range,
+  find,
+};
+
+module.exports.fn = fn;
